@@ -27,7 +27,7 @@ import matplotlib
 import shutil
 from tqdm import tqdm
 import random
-# import testFID
+import testFID
 # matplotlib.use("TkAgg")
 shutil.rmtree('log_dir', ignore_errors=True)
 
@@ -47,7 +47,7 @@ parser.add_argument("--img_size", type=int, default=32, help="size of each image
 parser.add_argument("--channels", type=int, default=1, help="number of image channels")
 parser.add_argument("--sample_interval", type=int, default=400, help="interval between image sampling")
 parser.add_argument("--pop_size", type=int, default=10, help="population size")
-parser.add_argument("--fifth", type=int, default=3, help="fifth")
+parser.add_argument("--fifth", type=int, default=2, help="fifth")
 opt = parser.parse_args()
 print(opt)
 cuda = True if torch.cuda.is_available() else False
@@ -127,7 +127,7 @@ Tensor = torch.FloatTensor
 
 
 def get_decay_prop(step):
-    return max(0.5, 0.9 - step / opt.n_epochs)
+    return max(0.1, 0.8 - step / opt.n_epochs)
 
 # @ray.remote
 class Worker(object):
@@ -275,9 +275,9 @@ for epoch in (range(opt.n_epochs)):
             save_image(best_picture, "fake_images/%d.png" % batches_done, nrow=5, normalize=True)
             save_image(real_imgs.data[:25], "real_images/%d.png" % batches_done, nrow=5, normalize=True)
             policy.save_model(generator, discriminator)
-    # fid, is_score = testFID.test_fid_is(generator[0])
-    # with open(f'{pop_size}_{fifth}_fid.txt', 'a') as f:
-    #     f.write(f'{epoch},{fid},{is_score[0]}\n')
+    fid, is_score = testFID.test_fid_is(generator[0])
+    with open(f'{pop_size}_{fifth}_fid.txt', 'a') as f:
+        f.write(f'{epoch},{fid},{is_score[0]}\n')
 
     # for g in generator:
     #     g.eval()
